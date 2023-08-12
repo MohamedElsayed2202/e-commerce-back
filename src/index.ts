@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import errorMiddleware from './middlewares/error';
 import authRouter from './routes/user';
 import bodyParser from 'body-parser';
+import { upload, uploadToFirebase } from './middlewares/upload';
+import cors from './middlewares/cors';
 
 const app = express() 
 
@@ -12,7 +14,9 @@ const app = express()
 //     res.status(200).send('hello')
 // })
 app.use(bodyParser.json());
+app.use(cors);
 app.use('/auth', authRouter);
+
 
 
 app.use(errorMiddleware)

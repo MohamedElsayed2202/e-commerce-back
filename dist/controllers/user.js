@@ -15,6 +15,8 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = __importDefault(require("../models/user"));
 const error_1 = __importDefault(require("../helpers/error"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const express_validator_1 = require("express-validator");
 class Auth {
 }
 _a = Auth;
@@ -24,6 +26,7 @@ Auth.getUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         if (users.length === 0) {
             (0, error_1.default)(404, 'No users found.');
         }
+        res.status(200).json({ users });
     }
     catch (error) {
         errorThrower(error, next);
@@ -31,6 +34,23 @@ Auth.getUsers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
 });
 Auth.registerUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty()) {
+            (0, error_1.default)(422, 'Validation faild.', errors.array());
+        }
+        let { name, email, password, photo, role, phone, address } = req.body;
+        password = yield bcryptjs_1.default.hash(password, 12);
+        const user = new user_1.default({
+            name,
+            email,
+            password,
+            role,
+            photo,
+            phone,
+            address
+        });
+        yield user.save();
+        res.status(201).json({ user });
     }
     catch (error) {
         errorThrower(error, next);

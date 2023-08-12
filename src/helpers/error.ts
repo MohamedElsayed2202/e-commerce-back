@@ -2,8 +2,8 @@
 
 import CustomeError from "../interfaces/custome-error";
 
-const errorHundler = function(code: number, message: string){
-    const error = new CustomeError(code, message);
+const errorHundler = function(code: number, message: string, data?: any){
+    const error = new CustomeError(code, message, data);
     throw error
 }
 

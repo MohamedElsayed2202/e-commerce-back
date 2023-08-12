@@ -1,19 +1,23 @@
 import mongoose, { Schema, Model } from "mongoose";
 
-interface User{
+export interface IUser{
     name: string,
     email: string,
     password: string,
     photo?: string,
-    role: string
+    role: string,
+    phone: string,
+    address?: string
 }
 
-const schema = new Schema<User, Model<User>>({
+const schema = new Schema<IUser, Model<IUser>>({
     name: {type: String, required: true},
     email: {type: String, required: true},
     password: {type: String, required: true},
     photo: String,
-    role: {type: String, enum:['admin','user']}
+    role: {type: String, enum:['admin','user','owner'], default:'user'},
+    phone: {type: String, required: true},
+    address: String
 })
 
  const UserModel = mongoose.model('User', schema);

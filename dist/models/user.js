@@ -29,7 +29,9 @@ const schema = new mongoose_1.Schema({
     email: { type: String, required: true },
     password: { type: String, required: true },
     photo: String,
-    role: { type: String, enum: ['admin', 'user'] }
+    role: { type: String, enum: ['admin', 'user', 'owner'], default: 'user' },
+    phone: { type: String, required: true },
+    address: String
 });
 const UserModel = mongoose_1.default.model('User', schema);
 exports.default = UserModel;
