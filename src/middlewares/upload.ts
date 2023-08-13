@@ -35,6 +35,7 @@ export const uploadToFirebase:RequestHandler =async (req, res, next) => {
     if(!req.file){
         return next();
     }
+    
     const name = uuidv4();
     const fileName = name + path.extname(req.file!.originalname);
     bucket.file(fileName).createWriteStream().end(req.file?.buffer).on('finish', async ()=>{
