@@ -15,8 +15,10 @@ authRouter.post('/add-user',upload.single('image'), uploadToFirebase,[
             return Promise.reject('Emial address already exists!');
         }
     }),
-    body('password').trim().isStrongPassword({minLength:9,minUppercase:1,minSymbols:1}),
+    body('password').trim().isStrongPassword({minLength:9,minUppercase:1,minLowercase:1,minSymbols:1}),
     body('role').exists().trim().equals('admin' || 'user' || 'owner')
 ] , Auth.registerUser);
+
+authRouter.post('/login', Auth.login);
 
 export default authRouter

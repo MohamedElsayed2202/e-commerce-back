@@ -2,9 +2,9 @@
 
 import CustomeError from "../interfaces/custome-error";
 
-const errorHundler = function(code: number, message: string, data?: any){
+const errorHandler = function(code: number, message: string, data?: any){
     const error = new CustomeError(code, message, data);
     throw error
 }
 
-export default errorHundler;
+export default errorHandler;
