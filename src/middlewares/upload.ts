@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin'
-import serviceAccount from '../serviceAccountKey.json'
+// import serviceAccount from '../serviceAccountKey.json'
 import { v4 as uuidv4 } from 'uuid'
 import { RequestHandler } from 'express'
 import {getDownloadURL} from 'firebase-admin/storage'
