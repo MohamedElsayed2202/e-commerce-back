@@ -19,7 +19,12 @@ const imageFilter = (req: any, file:any, cb:any) => {
     }
 };
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    // credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    credential: admin.credential.cert({
+        projectId: process.env.projectId,
+        clientEmail: process.env.clientEmail,
+        privateKey: process.env.privateKey
+    }),
     storageBucket: process.env.BUCKET
 })
 const bucket = admin.storage().bucket()

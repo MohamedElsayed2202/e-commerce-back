@@ -9,7 +9,6 @@ const authRouter = Router();
 authRouter.get('', Auth.getUsers);
 
 authRouter.post('/add-user',upload.single('image'), uploadToFirebase,[
-    body('name').trim().notEmpty().exists(),
     body('email').trim().exists().isEmail().custom(async (value) => {
         const user = await User.findOne({ email: value });
         if (user) {
@@ -17,7 +16,7 @@ authRouter.post('/add-user',upload.single('image'), uploadToFirebase,[
         }
     }),
     body('password').trim().isStrongPassword({minLength:9,minUppercase:1,minSymbols:1}),
-    body('phone').trim().notEmpty()
+    body('role').exists().trim().equals('admin' || 'user' || 'owner')
 ] , Auth.registerUser);
 
 export default authRouter
