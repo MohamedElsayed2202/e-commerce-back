@@ -1,7 +1,7 @@
 import mongoose, { Schema, Model } from "mongoose";
 
 export interface IUser{
-    name?: string,
+    name: string,
     email: string,
     password: string,
     photo?: string,
@@ -11,7 +11,7 @@ export interface IUser{
 }
 
 const schema = new Schema<IUser, Model<IUser>>({
-    name: String,
+    name: {type: String, required: true},
     email: {type: String, required: true, unique: true},
     password: {type: String, required: true},
     photo: String,

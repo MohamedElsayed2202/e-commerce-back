@@ -6,12 +6,13 @@ import bcrypt from 'bcryptjs';
 import { validationResult } from "express-validator";
 import { sign, verify } from "jsonwebtoken";
 import { Tokens, getTokens, regenerateRefreshToken } from "../helpers/token";
+import { getRoleAndId } from "../helpers/role-id";
 
 
 class Auth {
     static getUsers: RequestHandler = async (req, res, next) => {
         try {
-            const users = await User.find();
+            const users = await User.find({},'-__v');
             if (users.length === 0) {
                 errorHandler(404, 'No users found.');
             }
@@ -20,33 +21,77 @@ class Auth {
             errorThrower(error, next);
         }
     }
+
+    static registerOwner: RequestHandler = async (req, res, next) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                errorHandler(422, 'Validation faild.', errors.array());
+            }
+            let {name, email, password} = req.body as IUser
+            password = await bcrypt.hash(password, 12);
+            const user = new User({
+                name,
+                email,
+                password,
+                role: 'owner'
+            },'-__v');
+            await user.save();
+            const { token, refreshToken }: Tokens = await getTokens(user._id.toString(), user.role);
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true
+            })
+            res.status(201).json({ user, token });
+        } catch (error) {
+            errorThrower(error, next);
+        }
+    }
+
+    static registerAdmin: RequestHandler = async (req, res, next) => {
+        try {
+            const {role} = getRoleAndId(req);
+            if(role != 'owner'){
+                errorHandler(402, 'unauthorised operation');
+            }
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                errorHandler(422, 'Validation faild.', errors.array());
+            }
+            let { name, email, password, phone } = req.body as IUser;
+            password = await bcrypt.hash(password, 12);
+            const user = new User({
+                name,
+                email,
+                password,
+                role: 'admin',
+                phone
+            },'-__v');
+            await user.save();
+            res.status(201).json({ user });           
+        } catch (error) {
+            errorThrower(error, next);
+        }
+    }
+    
     static registerUser: RequestHandler = async (req, res, next) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 errorHandler(422, 'Validation faild.', errors.array());
             }
-            let { name, email, password, photo, role, phone, address } = req.body as IUser;
-
+            let { name, email, password } = req.body as IUser;
             password = await bcrypt.hash(password, 12);
             const user = new User({
                 name,
                 email,
                 password,
-                role,
-                photo,
-                phone,
-                address
-            })
+            },'-__v');
             await user.save();
-
             const { token, refreshToken }: Tokens = await getTokens(user._id.toString(), user.role);
-
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true
             })
-
-            res.status(201).json({ user, token });
+            res.status(201).json({ token });
         } catch (error) {
             errorThrower(error, next);
         }
@@ -103,6 +148,23 @@ class Auth {
             await Token.findOneAndRemove({token: refreshToken});
             res.cookie('refreshToken', '', {maxAge:0});
             res.status(202).json({message: 'success'});
+        } catch (error) {
+            errorThrower(error, next)
+        }
+    }
+
+    static editProfile: RequestHandler = async (req, res, next) => {
+        try {
+            const {id} = getRoleAndId(req)
+            let {name, phone, photo, address} = req.body as IUser
+            const user = await User.findById(id);
+            user!.name = name || user!.name;
+            user!.phone = phone || user!.phone;
+            if(user?.photo === undefined){
+                user!.photo = photo;
+            }else{
+                
+            }
         } catch (error) {
             errorThrower(error, next)
         }

@@ -46,6 +46,10 @@ export const uploadToFirebase:RequestHandler =async (req, res, next) => {
     });
 } 
 
+export const deleteImage =async () => {
+    bucket.file('').delete()
+}
+
 
 
 

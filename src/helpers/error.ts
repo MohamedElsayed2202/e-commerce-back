@@ -8,8 +8,8 @@ const errorHandler = function(code: number, message: string, data?: any){
 }
 
 export function errorThrower(error: any, next: any): void {
-    if (!error.statusCode) {
-        error.statusCode = 500;
+    if (!error.code) {
+        error.code = 500;
     }
     next(error);
 }
