@@ -16,9 +16,13 @@ authRouter.post('/add-user',upload.single('image'), uploadToFirebase,[
         }
     }),
     body('password').trim().isStrongPassword({minLength:9,minUppercase:1,minLowercase:1,minSymbols:1}),
-    body('role').exists().trim().equals('admin' || 'user' || 'owner')
 ] , Auth.registerUser);
 
 authRouter.post('/login', Auth.login);
+
+authRouter.post('/refresh', Auth.refresh);
+
+authRouter.post('/logout', Auth.logout)
+
 
 export default authRouter

@@ -7,4 +7,11 @@ const errorHandler = function(code: number, message: string, data?: any){
     throw error
 }
 
+export function errorThrower(error: any, next: any): void {
+    if (!error.statusCode) {
+        error.statusCode = 500;
+    }
+    next(error);
+}
+
 export default errorHandler;
