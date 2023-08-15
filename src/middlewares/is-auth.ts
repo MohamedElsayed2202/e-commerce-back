@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
-import errorHandler, { errorThrower } from "../helpers/error";
+import{ errorHandler, errorThrower } from "../helpers/helpers";
 import { verify } from "jsonwebtoken";
+import User from "../models/user";
 
 const isAuth: RequestHandler = async (req, res, next) => {
     try {
@@ -8,9 +9,13 @@ const isAuth: RequestHandler = async (req, res, next) => {
         if(!token){
             errorHandler(401, 'not authenticated.');
         }
-        const decodedToken  = verify(token, process.env.token_secret!);
+        const decodedToken:any  = verify(token, process.env.token_secret!);
         if(!decodedToken){
             errorHandler(401, 'not authenticated.');
+        }
+        const user = await User.findById(decodedToken.id)
+        if(!user){
+            errorHandler(403, 'access denied');
         }
         next();
     } catch (error) {

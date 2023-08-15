@@ -6,14 +6,12 @@ import authRouter from './routes/user';
 import bodyParser from 'body-parser';
 import { upload, uploadToFirebase } from './middlewares/upload';
 import cors from './middlewares/cors';
+import cookieParser from 'cookie-parser';
 
 const app = express() 
 
-
-// app.use('/', (req, res, nex) => {
-//     res.status(200).send('hello')
-// })
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(cors);
 app.use('/api/auth', authRouter);
 

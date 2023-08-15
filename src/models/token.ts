@@ -1,11 +1,7 @@
 import mongoose, { Schema, Model } from "mongoose";
+import { IToken } from "../interfaces/interfaces";
 
-interface IToken{
-    userId: Schema.Types.ObjectId,
-    token: string,
-    createdAt: Date,
-    expiredAt: Date
-}
+
 
 const schema = new Schema<IToken, Model<IToken>>({
     userId: {type: Schema.Types.ObjectId, ref: 'User', required: true},
@@ -14,6 +10,6 @@ const schema = new Schema<IToken, Model<IToken>>({
     expiredAt: {type: Date, required: true}
 })
 
-const TokenModel = mongoose.model('Token',schema);
+const Token = mongoose.model('Token',schema);
 
-export default TokenModel
+export default Token

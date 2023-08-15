@@ -49,6 +49,8 @@ authRouter.post('/refresh', Auth.refresh);
 
 authRouter.post('/logout', Auth.logout)
 
-authRouter.put('/profile')
+authRouter.put('/update-user', isAuth, upload.single('image'), uploadToFirebase, Auth.editProfile);
+
+
 
 export default authRouter
