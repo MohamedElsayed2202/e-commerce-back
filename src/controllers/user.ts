@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import User from "../models/user";
 import Token from "../models/token";
-import { errorHandler, errorThrower, registration } from "../helpers/helpers";
+import { errorHandler, errorThrower, isValidated, registration, sendEmail } from "../helpers/helpers";
 import bcrypt from 'bcryptjs';
 import { validationResult } from "express-validator";
 import { sign, verify } from "jsonwebtoken";
@@ -15,7 +15,7 @@ import { deleteFromFirebase } from "../middlewares/upload";
 class Auth {
     static getUsers: RequestHandler = async (req, res, next) => {
         try {
-            const users = await User.find({}, '-__v').populate<{profile: IProfile}>('profile','-_id -__v');
+            const users = await User.find({}, '-__v -password').populate<{profile: IProfile}>('profile','-_id -__v');
             if (users.length === 0) {
                 errorHandler(404, 'No users found.');
             }
@@ -27,10 +27,7 @@ class Auth {
  
     static registerOwner: RequestHandler = async (req, res, next) => {
         try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                errorHandler(422, 'Validation faild.', errors.array());
-            }
+            isValidated(req)
             const user = await registration(req.body as IFullUser, 'owner')
             const { token, refreshToken }: Tokens = await getTokens(user._id.toString(), user.role);
             res.cookie('refreshToken', refreshToken, {
@@ -48,10 +45,7 @@ class Auth {
             if (role != 'owner') {
                 errorHandler(402, 'unauthorised operation');
             }
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                errorHandler(422, 'Validation faild.', errors.array());
-            }
+            isValidated(req)
             const user = await registration(req.body as IFullUser, 'admin')
             res.status(201).json({ user });
         } catch (error) {
@@ -61,12 +55,11 @@ class Auth {
 
     static registerUser: RequestHandler = async (req, res, next) => {
         try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                errorHandler(422, 'Validation faild.', errors.array());
-            }
+            isValidated(req)
             const user = await registration(req.body as IFullUser)
             const { token, refreshToken }: Tokens = await getTokens(user._id.toString(), user.role);
+            const link = `${process.env.BASE_URL}/auth/verify/${user._id}/${refreshToken}`
+            await sendEmail(user.email, link, next);
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true
             })
@@ -114,7 +107,7 @@ class Auth {
             const token = sign({
                 id: data.id,
                 role: data.role
-            }, process.env.token_secret!)
+            }, process.env.token_secret!, { expiresIn: '2h' })
             res.status(201).json({ token });
         } catch (error) {
             errorThrower(error, next);
@@ -142,7 +135,7 @@ class Auth {
                     errorHandler(422, 'validation faild', 'Must provide a valid EG phone number');
                 }
             }
-            const user = await User.findById(id, '-__v');
+            const user = await User.findById(id, '-__v -password');
             if(name !== undefined){
                 user!.name = name || user!.name;
                 await user!.save();
@@ -153,8 +146,8 @@ class Auth {
             userProfile!.address = address || userProfile?.address;
             userProfile!.photo = photo || userProfile?.photo;
             await userProfile?.save();
-            const final = await user?.populate('profile');
-            res.status(200).json({message: 'updated successfully', profile: final});
+            const final = await user?.populate('profile','-_id -__v');
+            res.status(200).json({message: 'updated successfully', user: final});
         } catch (error) {
             if(req.body['photo']){
                 deleteFromFirebase(req.body['photo'])
@@ -162,6 +155,53 @@ class Auth {
             errorThrower(error, next)
         }
     } 
+
+    static getUserProfile: RequestHandler = async (req, res, next)=>{
+        try {
+            const {id} = getRoleAndId(req);
+            const user = await User.findById(id,'-__v -password').populate<{profile: IProfile}>('profile','-_id -__v');
+            res.status(200).json({user});
+        } catch (error) {
+            errorThrower(error, next)
+        }
+    }
+
+    static changePassword: RequestHandler = async (req, res, next) => {
+        try {
+            isValidated(req)
+            const {id} = getRoleAndId(req);
+            let {password} = req.body
+            password = await bcrypt.hash(password, 12);
+            await User.findByIdAndUpdate(id, {
+                password: password
+            })
+            res.status(201).jsonp({message: 'updated successfully.'})
+        } catch (error) {
+            errorThrower(error, next)
+        }
+    }
+
+    static verifyEmail: RequestHandler = async (req, res, next) => {
+        try {
+            const {id, token} = req.params;
+            const user = await User.findById(id);
+            if(!user){
+                errorHandler(400, 'invalid link');
+            }
+            const refToken = await Token.findOne({
+                userId: id,
+                token: token
+            })
+            if(!refToken){
+                errorHandler(400, 'invalid link');
+            }
+            user!.verified = true;
+            user?.save();
+            res.status(200).json({message: 'email verified sucessfully'});
+        } catch (error) {
+            errorThrower(error, next)
+        }
+    }
 }
 
 

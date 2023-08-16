@@ -5,6 +5,7 @@ export interface IUser{
     email: string,
     password: string,
     role: string,
+    verified?: boolean,
     profile: Schema.Types.ObjectId,
 }
 

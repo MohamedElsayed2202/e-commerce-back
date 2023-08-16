@@ -9,6 +9,8 @@ const authRouter = Router();
 
 authRouter.get('', Auth.getUsers);
 
+authRouter.get('/user-profile', isAuth, Auth.getUserProfile)
+
 authRouter.post('/add-owner', [
     body('name').trim().exists().isLength({min: 3}),
     body('email').trim().exists().isEmail().custom(async (value) => {
@@ -50,6 +52,13 @@ authRouter.post('/refresh', Auth.refresh);
 authRouter.post('/logout', Auth.logout)
 
 authRouter.put('/update-user', isAuth, upload.single('image'), uploadToFirebase, Auth.editProfile);
+
+authRouter.put('/change-password', isAuth, [
+    body('password').trim().isStrongPassword({minLength:9,minUppercase:1,minLowercase:1,minSymbols:1})
+], Auth.changePassword)
+
+
+authRouter.get('/verify/:id/:token', Auth.verifyEmail)
 
 
 

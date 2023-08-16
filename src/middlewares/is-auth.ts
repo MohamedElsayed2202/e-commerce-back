@@ -7,11 +7,21 @@ const isAuth: RequestHandler = async (req, res, next) => {
     try {
         const token = req.get("Authorization")?.split(' ')[1] || '';
         if(!token){
-            errorHandler(401, 'not authenticated.');
+            errorHandler(401, 'unauthorized');
         }
-        const decodedToken:any  = verify(token, process.env.token_secret!);
+        
+        const decodedToken:any  = verify(token, process.env.token_secret!, (err, decoded) => {         
+           if(err && err.name === 'TokenExpiredError'){
+                errorHandler(401, 'unauthorized');
+            }
+            if(decoded){
+                const {id, role} = <any>decoded
+                return {id, role}
+            }
+        });
+        
         if(!decodedToken){
-            errorHandler(401, 'not authenticated.');
+            errorHandler(401, 'unauthorized');
         }
         const user = await User.findById(decodedToken.id)
         if(!user){
@@ -19,7 +29,7 @@ const isAuth: RequestHandler = async (req, res, next) => {
         }
         next();
     } catch (error) {
-        errorThrower(error, next)
+        errorThrower(error, next)       
     }
 }
 
