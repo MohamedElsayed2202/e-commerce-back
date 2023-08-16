@@ -21,7 +21,7 @@ const isAuth: RequestHandler = async (req, res, next) => {
         });
         
         if(!decodedToken){
-            errorHandler(401, 'unauthorized');
+            errorHandler(403, 'access denied');
         }
         const user = await User.findById(decodedToken.id)
         if(!user){
