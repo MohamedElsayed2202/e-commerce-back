@@ -33,3 +33,37 @@ export interface IProfile{
     address?: string,
     name?: string
 }
+
+export interface IProduct {
+    name: string,
+    description: string,
+    price: number,
+    quantaty: number,
+    discount: number,
+    images: Array<string>,
+    colors: Array<string>,
+    sizes: Array<string>,
+    for: Array<string>,
+    soldItems: number,
+    reating: number,
+    rates: Array<IRate>,
+    brandId: Schema.Types.ObjectId,
+    categories: Schema.Types.ObjectId
+}
+
+export interface IRate{
+    userId: Schema.Types.ObjectId,
+    rate: number,
+    comment: string
+}
+
+export interface IBrand{
+    name: string,
+    logo: string,
+}
+
+export interface ICategory{
+    name: string,
+    products: Array<Schema.Types.ObjectId>
+}
+
