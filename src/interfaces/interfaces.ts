@@ -1,4 +1,4 @@
-import { Schema } from "mongoose"
+import { Schema, Types } from "mongoose"
 
 export interface IUser{
     name: string,
@@ -38,15 +38,15 @@ export interface IProduct {
     name: string,
     description: string,
     price: number,
-    quantaty: number,
+    quantity: number,
     discount: number,
-    images: Array<string>,
-    colors: Array<string>,
-    sizes: Array<string>,
-    for: Array<string>,
+    images: Types.Array<string>,
+    colors: Types.Array<string>,
+    sizes: Types.Array<string>,
+    for: Types.Array<string>,
     soldItems: number,
     reating: number,
-    rates: Array<IRate>,
+    rates: Types.DocumentArray<IRate>,
     brandId: Schema.Types.ObjectId,
     categories: Schema.Types.ObjectId
 }
@@ -64,6 +64,22 @@ export interface IBrand{
 
 export interface ICategory{
     name: string,
-    products: Array<Schema.Types.ObjectId>
+    products: Types.Array<Schema.Types.ObjectId>
 }
 
+export interface ICart{
+    userId: Schema.Types.ObjectId,
+    products: Types.DocumentArray<ICartProduct>,
+    totalPrice: number
+}
+
+export interface ICartProduct{
+    productId: Schema.Types.ObjectId,
+    quantity: number
+}
+
+export interface IOrder{
+    userId: Schema.Types.ObjectId,
+    cartId: Schema.Types.ObjectId,
+    status: string
+}

@@ -11,7 +11,7 @@ const schema = new Schema<IProduct, Model<IProduct>>({
     name: {type: String, required: true},
     description: {type: String, required: true},
     price: {type: Number, required: true},
-    quantaty: {type: Number, required: true},
+    quantity: {type: Number, required: true},
     discount: {type: Number, required: true},
     images: {type: [String], required: true},
     colors: {type: [String], required: true},
