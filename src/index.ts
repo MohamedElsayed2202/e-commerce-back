@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 import { upload, uploadToFirebase } from './middlewares/upload';
 import cors from './middlewares/cors';
 import cookieParser from 'cookie-parser';
+import brandRouter from './routes/brand';
 
 const app = express() 
 
@@ -14,7 +15,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors);
 app.use('/api/auth', authRouter);
-
+app.use('/api/brand', brandRouter);
 
 
 app.use(errorMiddleware)

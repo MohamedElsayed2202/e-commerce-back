@@ -127,14 +127,9 @@ class Auth {
 
     static editProfile: RequestHandler = async (req, res, next) => {
         try {
+            isValidated(req)
             const { id } = getRoleAndId(req)
             let { name, phone, photo, address } = req.body as IProfile
-            if(phone !== undefined){
-                const regex = /^01[0125][0-9]{8}$/;
-                if(!regex.test(phone)){
-                    errorHandler(422, 'validation faild', 'Must provide a valid EG phone number');
-                }
-            }
             const user = await User.findById(id, '-__v -password');
             if(name !== undefined){
                 user!.name = name || user!.name;

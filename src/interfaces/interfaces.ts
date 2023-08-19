@@ -40,15 +40,26 @@ export interface IProduct {
     price: number,
     quantity: number,
     discount: number,
+    variations: Types.DocumentArray<IVariation>
     images: Types.Array<string>,
-    colors: Types.Array<string>,
-    sizes: Types.Array<string>,
+    // colors: Types.Array<string>,
+    // sizes: Types.Array<string>,
     for: Types.Array<string>,
     soldItems: number,
     reating: number,
     rates: Types.DocumentArray<IRate>,
     brandId: Schema.Types.ObjectId,
     categories: Schema.Types.ObjectId
+}
+
+export interface IVariation{
+    color: string,
+    sizes: Types.DocumentArray<ISize>
+}
+
+export interface ISize{
+    size: string,
+    quantity: number
 }
 
 export interface IRate{

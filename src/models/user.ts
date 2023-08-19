@@ -1,5 +1,6 @@
 import mongoose, { Schema, Model } from "mongoose";
 import { IUser } from "../interfaces/interfaces";
+import { checkSchema } from "express-validator";
 
 
 
@@ -14,4 +15,3 @@ const schema = new Schema<IUser, Model<IUser>>({
 
  const User = mongoose.model('User', schema);
  export default User
-
