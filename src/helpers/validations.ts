@@ -1,7 +1,7 @@
 import { Location, Schema, checkExact, checkSchema } from "express-validator";
 import User from "../models/user";
 
-export const userSchemaValidator = {
+export const userSchemaValidator:Schema = {
     name: {
         exists: true,
         isString: true,
@@ -73,6 +73,75 @@ export const userSchemaValidator = {
         trim: true,
         isString: true,
         optional: true,
+        escape: true,
+    }
+ }
+
+ export const productSchemaValidator:Schema = {
+    name: {
+        exists: true,
+        isString: true,
+        trim: true,
+        escape: true,
+    },
+    description: {
+        exists: true,
+        isString: true,
+        trim: true,
+        escape: true,
+    },
+    price:{
+        exists: true,
+        isNumeric: true,
+        trim: true,
+        escape: true,
+    },
+    quantity:{
+        exists: true,
+        isNumeric: true,
+        trim: true,
+        escape: true,
+    },
+    discount:{
+        exists: true,
+        isNumeric: true,
+        trim: true,
+        escape: true,
+    },
+    variations:{
+        exists: true,
+        isArray: true,
+        trim: true,
+        escape: true,
+    },
+    images:{
+        exists: true,
+        isArray: true,
+        trim: true,
+        escape: true,
+    },
+    target:{
+        exists: true,
+        isString: true,
+        trim: true,
+        escape: true,
+    },
+    soldItems: {
+        exists: true,
+        isNumeric: true,
+        trim: true,
+        escape: true,
+    },
+    brandId:{
+        exists: true,
+        isString: true,
+        trim: true,
+        escape: true,
+    },
+    categoryId:{
+        exists: true,
+        isString: true,
+        trim: true,
         escape: true,
     }
  }

@@ -16,9 +16,9 @@ class Auth {
     static getUsers: RequestHandler = async (req, res, next) => {
         try {
             const users = await User.find({}, '-__v -password').populate<{profile: IProfile}>('profile','-_id -__v');
-            if (users.length === 0) {
-                errorHandler(404, 'No users found.');
-            }
+            // if (users.length === 0) {
+            //     errorHandler(404, 'No users found.');
+            // }
             res.status(200).json({ users })
         } catch (error: any) {
             errorThrower(error, next);
@@ -41,7 +41,7 @@ class Auth {
 
     static registerAdmin: RequestHandler = async (req, res, next) => {
         try {
-            const { role } = getRoleAndId(req);
+            const { role } = getRoleAndId(req); 
             if (role != 'owner') {
                 errorHandler(402, 'unauthorised operation');
             }

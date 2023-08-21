@@ -42,14 +42,12 @@ export interface IProduct {
     discount: number,
     variations: Types.DocumentArray<IVariation>
     images: Types.Array<string>,
-    // colors: Types.Array<string>,
-    // sizes: Types.Array<string>,
-    for: Types.Array<string>,
+    target: string,
     soldItems: number,
     reating: number,
     rates: Types.DocumentArray<IRate>,
     brandId: Schema.Types.ObjectId,
-    categories: Schema.Types.ObjectId
+    categoryId: Schema.Types.ObjectId
 }
 
 export interface IVariation{
@@ -71,6 +69,7 @@ export interface IRate{
 export interface IBrand{
     name: string,
     logo: string,
+    categories: Array<Types.ObjectId>
 }
 
 export interface ICategory{

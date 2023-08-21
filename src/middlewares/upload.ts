@@ -30,7 +30,7 @@ admin.initializeApp({
     }),
     storageBucket: process.env.BUCKET
 })
-const bucket = admin.storage().bucket()
+const bucket = admin.storage().bucket('/brands/')
 
 export const upload = multer({ storage: imageStorge, fileFilter: imageFilter });
 

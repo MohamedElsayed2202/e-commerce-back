@@ -5,16 +5,17 @@ import { body } from "express-validator";
 import User from "../models/user";
 import isAuth from "../middlewares/is-auth";
 import globalValidator, { profileSchemaValidator, userSchemaValidator } from "../helpers/validations";
+import { roleIsNotUser, roleIsOwner } from "../middlewares/roles";
 
 const authRouter = Router();
 
-authRouter.get('', Auth.getUsers);
+authRouter.get('/', isAuth, roleIsNotUser, Auth.getUsers);
 
 authRouter.get('/user-profile', isAuth, Auth.getUserProfile)
 
 authRouter.post('/add-owner', globalValidator(userSchemaValidator), Auth.registerOwner);
 
-authRouter.post('/add-admin', isAuth, globalValidator(userSchemaValidator), Auth.registerAdmin);
+authRouter.post('/add-admin', isAuth, roleIsOwner, globalValidator(userSchemaValidator), Auth.registerAdmin);
 
 authRouter.post('/add-user', globalValidator(userSchemaValidator), Auth.registerUser);
 
