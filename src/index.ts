@@ -12,6 +12,7 @@ import categoryRouter from './routes/category';
 const app = express() 
 
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(cors);
 app.use('/api/auth', authRouter);

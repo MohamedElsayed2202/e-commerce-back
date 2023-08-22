@@ -2,18 +2,25 @@ import { RequestHandler } from "express";
 import { IBrand } from "../interfaces/interfaces";
 import Brand from "../models/brand";
 import { errorHandler, errorThrower } from "../helpers/helpers";
-import { deleteSingleImageFromFirebase } from "../middlewares/upload";
+import { deleteSingleImageFromFirebase, uploadSingleImageToFirebase } from "../middlewares/upload";
 
 class BrandController {
 
     static createBrand: RequestHandler = async (req, res, next) => {
         try {
-            const { name, photo } = req.body;
+            const { name } = req.body;
             const brand = new Brand({
                 name,
-                logo: photo,
             });
             await brand.save();
+            let logo 
+            if (req.file) {
+                logo = await uploadSingleImageToFirebase(brand.id, 'brands', req, next);
+                if (logo) {
+                    brand.logo = logo;
+                    await brand.save();
+                }
+            }
             res.status(201).json({
                 message: "Brand created successfully",
                 brand,
@@ -37,11 +44,15 @@ class BrandController {
     static updateBrand: RequestHandler = async (req, res, next) =>{
         try {
             const id = req.params.id;
-            const { name, photo } = req.body;
-            const brand = await Brand.findByIdAndUpdate(id, {
-                name,
-                logo: photo,
-            }, { new: true });
+            const { name } = req.body;
+            const brand = await Brand.findById(id);
+            let logo;
+            if(req.file && brand?.logo === undefined){
+                logo = await uploadSingleImageToFirebase(brand!._id.toString(), 'brands', req, next);
+            }
+            brand!.name = name || brand?.name;
+            brand!.logo = logo || brand?.logo;
+            await brand!.save();
             res.status(201).json({
                 message: "Brand updated successfully",
                 brand,

@@ -8,7 +8,7 @@ import { sign, verify } from "jsonwebtoken";
 import { Tokens, getRoleAndId, getTokens, regenerateRefreshToken } from "../helpers/helpers";
 import { IFullUser, IProfile, IUser } from "../interfaces/interfaces";
 import Profile from "../models/profile";
-import { deleteSingleImageFromFirebase } from "../middlewares/upload";
+import { deleteSingleImageFromFirebase, uploadSingleImageToFirebase } from "../middlewares/upload";
 
 
 
@@ -126,7 +126,7 @@ class Auth {
         try {
             isValidated(req)
             const { id } = getRoleAndId(req)
-            let { name, phone, image: photo, address } = req.body as IProfile
+            let { name, phone, address } = req.body as IProfile
             const user = await User.findById(id, '-__v -password');
             if(name !== undefined){
                 user!.name = name || user!.name;
@@ -134,9 +134,17 @@ class Auth {
             }
             const profileId = user!.profile.toString();
             const userProfile = await Profile.findById(profileId,'-__v');
+            let image = undefined;
+            if(req.file && userProfile?.image === undefined){
+                image = await uploadSingleImageToFirebase(userProfile!._id.toString(), 'profiles', req, next);
+            }
+            if(req.file && userProfile?.image !== undefined){
+                await deleteSingleImageFromFirebase(userProfile!._id.toString(), 'profiles', userProfile!.image, next);
+                image = await uploadSingleImageToFirebase(userProfile!._id.toString(), 'profiles', req, next);
+            }
             userProfile!.phone = phone || userProfile?.phone;
             userProfile!.address = address || userProfile?.address;
-            userProfile!.image = photo || userProfile?.image;
+            userProfile!.image = image || userProfile?.image;
             await userProfile?.save();
             const final = await user?.populate('profile','-_id -__v');
             res.status(200).json({message: 'updated successfully', user: final});

@@ -69,7 +69,7 @@ export interface IRate{
 
 export interface IBrand{
     name: string,
-    logo: string,
+    logo?: string,
     categories: Array<Types.ObjectId>
 }
 
