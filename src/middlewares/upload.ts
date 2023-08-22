@@ -1,7 +1,7 @@
 import * as admin from 'firebase-admin'
 // import serviceAccount from '../serviceAccountKey.json'
 import { v4 as uuidv4 } from 'uuid'
-import { RequestHandler } from 'express'
+import { NextFunction, Request, RequestHandler } from 'express'
 import { getDownloadURL } from 'firebase-admin/storage'
 import multer from 'multer'
 import path from 'path'
@@ -30,38 +30,51 @@ admin.initializeApp({
     }),
     storageBucket: process.env.BUCKET
 })
-const bucket = admin.storage().bucket('/brands/')
+
+const bucket = admin.storage().bucket();
 
 export const upload = multer({ storage: imageStorge, fileFilter: imageFilter });
 
-export const uploadToFirebase: RequestHandler = async (req, res, next) => {
-    try {
-        if (!req.file) {
-            return next();
-        }
-        const { id } = getRoleAndId(req)
-        const profileId = await User.findById(id, 'profile');
-        const photo = await Profile.findById(profileId?.profile, 'photo');
-        if (photo!.photo !== undefined) {
-            deleteFromFirebase(photo?.photo!)
-        }
+export const uploadSingleImageToFirebase = async (id: string, dist: string, req: Request, next: NextFunction): Promise<string|undefined> => {
+    try {       
         const name = uuidv4();
         const fileName = name + path.extname(req.file!.originalname);
-        bucket.file(fileName).createWriteStream().end(req.file?.buffer).on('finish', async () => {
-            const ref = bucket.file(fileName);
-            const downloadUrl = await getDownloadURL(ref);
-            req.body['photo'] = downloadUrl;
-            next();
-        });
+        await bucket.file(`${dist}/${id}/${fileName}`).save(req.file!.buffer);
+        const ref = bucket.file(`${dist}/${id}/${fileName}`);
+        const url = await getDownloadURL(ref);
+        return url;
     } catch (error) {
         errorThrower(error, next)
     }
 }
 
-export const deleteFromFirebase = async (url: string) => {
-    const fileName = url.split('/')[7].split('?')[0]
-    await bucket.file(fileName).delete();
-}
+export const deleteSingleImageFromFirebase = async (id: string, dist: string, url: string, next: NextFunction) => {
+    
+    const fileName = url.replace(/%2F/g, '/').split('/')[9].split('?')[0];
+    try {
+        await bucket.file(`${dist}/${id}/${fileName}`).delete();
+    } catch (error) {
+        errorThrower(error, next)
+    }
+} 
+
+
+// bucket.file(`${dist}/${id}/${fileName}`).createWriteStream().end(req.file?.buffer).on('finish', async () => {
+//     const ref = bucket.file(`${dist}/${id}/${fileName}`)
+//      await getDownloadURL(ref)
+//     // return downloadUrl
+// });
+
+// bucket.deleteFiles({
+    //     prefix: `${dist}/${id}/${fileName}`,
+    // });
+// for deleteing multiple images
+// bucket.deleteFiles({
+//     prefix : `${dist}/${id}`,
+//     // delimiter: `${dist}/${id}`,
+//     // startOffset: `/${dist}/${id}/`,
+//     // endOffset: `${dist}/${id}`
+// });
 
 
 

@@ -8,7 +8,7 @@ import { sign, verify } from "jsonwebtoken";
 import { Tokens, getRoleAndId, getTokens, regenerateRefreshToken } from "../helpers/helpers";
 import { IFullUser, IProfile, IUser } from "../interfaces/interfaces";
 import Profile from "../models/profile";
-import { deleteFromFirebase } from "../middlewares/upload";
+import { deleteSingleImageFromFirebase } from "../middlewares/upload";
 
 
 
@@ -16,9 +16,6 @@ class Auth {
     static getUsers: RequestHandler = async (req, res, next) => {
         try {
             const users = await User.find({}, '-__v -password').populate<{profile: IProfile}>('profile','-_id -__v');
-            // if (users.length === 0) {
-            //     errorHandler(404, 'No users found.');
-            // }
             res.status(200).json({ users })
         } catch (error: any) {
             errorThrower(error, next);
@@ -129,7 +126,7 @@ class Auth {
         try {
             isValidated(req)
             const { id } = getRoleAndId(req)
-            let { name, phone, photo, address } = req.body as IProfile
+            let { name, phone, image: photo, address } = req.body as IProfile
             const user = await User.findById(id, '-__v -password');
             if(name !== undefined){
                 user!.name = name || user!.name;
@@ -139,14 +136,11 @@ class Auth {
             const userProfile = await Profile.findById(profileId,'-__v');
             userProfile!.phone = phone || userProfile?.phone;
             userProfile!.address = address || userProfile?.address;
-            userProfile!.photo = photo || userProfile?.photo;
+            userProfile!.image = photo || userProfile?.image;
             await userProfile?.save();
             const final = await user?.populate('profile','-_id -__v');
             res.status(200).json({message: 'updated successfully', user: final});
         } catch (error) {
-            if(req.body['photo']){
-                deleteFromFirebase(req.body['photo'])
-            }
             errorThrower(error, next)
         }
     } 

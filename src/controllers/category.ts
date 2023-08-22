@@ -24,9 +24,6 @@ class CategoryController {
     static getAllCategories: RequestHandler = async (req, res, next)=>{
         try {
             const categories = await Category.find().select('-__v');
-            // if (categories.length === 0) {
-            //     errorHandler(404, 'no categories found');
-            // }
             res.status(200).json({
                 categories
             });

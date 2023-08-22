@@ -1,6 +1,6 @@
 import { Router } from "express";
 import Auth from "../controllers/user";
-import { upload, uploadToFirebase } from "../middlewares/upload";
+import { upload, uploadSingleImageToFirebase } from "../middlewares/upload";
 import { body } from "express-validator";
 import User from "../models/user";
 import isAuth from "../middlewares/is-auth";
@@ -26,7 +26,7 @@ authRouter.post('/refresh', Auth.refresh);
 
 authRouter.post('/logout', Auth.logout)
 
-authRouter.put('/update-user', isAuth, upload.single('image'), globalValidator(profileSchemaValidator), uploadToFirebase, Auth.editProfile);
+authRouter.put('/update-user', isAuth, upload.single('image'), globalValidator(profileSchemaValidator), Auth.editProfile); // add image handler
 
 authRouter.put('/change-password', isAuth, [
     body('password').trim().isStrongPassword({minLength:9,minUppercase:1,minLowercase:1,minSymbols:1})

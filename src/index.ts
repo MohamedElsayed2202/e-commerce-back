@@ -4,7 +4,6 @@ import mongoose from 'mongoose';
 import errorMiddleware from './middlewares/error';
 import authRouter from './routes/user';
 import bodyParser from 'body-parser';
-import { upload, uploadToFirebase } from './middlewares/upload';
 import cors from './middlewares/cors';
 import cookieParser from 'cookie-parser';
 import brandRouter from './routes/brand';

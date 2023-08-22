@@ -29,7 +29,8 @@ export interface IToken{
 
 export interface IProfile{
     phone?: string,
-    photo?: string,
+    image?: string,
+    imageUrl?: string,
     address?: string,
     name?: string
 }
