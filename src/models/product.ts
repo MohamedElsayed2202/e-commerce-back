@@ -18,18 +18,19 @@ const schema = new Schema<IProduct, Model<IProduct>>({
         color: { type: String, required: true },
         sizes: [{
             size: { type: String, required: true },
-            quantity: { type: Number, required: true }
-        }]
+            quantity: { type: Number, required: true },
+        }],
+        _id: false
     }],
-    // colors: {type: [String], required: true},
-    // sizes: {type: [String], required: true},
     target: { type: String, required: true, enum: ['men', 'women', 'kids'] },
     soldItems: { type: Number, required: true, default: 0 },
     reating: { type: Number, required: true, default: 0 },
     rates: { type: [rateSchema], required: true, default: [] },
     brandId: { type: Schema.Types.ObjectId, required: true, ref: 'Brand', unique: true },
-    categoryId: { type: Schema.Types.ObjectId, required: true, ref: 'Category' }
+    categoryId: { type: Schema.Types.ObjectId, required: true, ref: 'Category', unique: true}
 })
+schema.index({name: 'text'});
+
 
 const Product = mongoose.model('Product', schema);
 

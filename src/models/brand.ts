@@ -3,7 +3,10 @@ import { IBrand } from "../interfaces/interfaces";
 
 const schema = new Schema<IBrand, Model<IBrand>>({
     name: {type: String, required: true, unique: true},
-    logo: String,
+    logo: {type:{
+        url: String,
+        id: String
+    }, _id: false},
     categories: {type: [Schema.Types.ObjectId], ref: 'Category', required: true, default: []}
 })
 

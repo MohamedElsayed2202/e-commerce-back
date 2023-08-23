@@ -29,10 +29,15 @@ export interface IToken{
 
 export interface IProfile{
     phone?: string,
-    image?: string,
+    image?: IImage,
     imageUrl?: string,
     address?: string,
     name?: string
+}
+
+export interface IImage{
+        url: string,
+        id: string
 }
 
 export interface IProduct {
@@ -69,7 +74,7 @@ export interface IRate{
 
 export interface IBrand{
     name: string,
-    logo?: string,
+    logo?: IImage,
     categories: Array<Types.ObjectId>
 }
 

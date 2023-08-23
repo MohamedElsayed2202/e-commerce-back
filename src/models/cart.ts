@@ -13,7 +13,8 @@ const schema = new Schema<ICart, Model<ICart>>({
             quantity: { 
                 type: Number, 
                 required: true 
-            }
+            },
+            _id: false
         }
     ],
     totalPrice: { type: Number, required: true }

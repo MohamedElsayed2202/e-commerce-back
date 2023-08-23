@@ -3,7 +3,14 @@ import { IProfile } from "../interfaces/interfaces";
 
 const schema = new Schema<IProfile, Model<IProfile>>({
     phone: String,
-    image: String,
+    image: {
+        type: {
+            url: String,
+            id: String,
+        },
+        required: false,
+        _id: false,
+    },
     address: String,
 })
 

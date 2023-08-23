@@ -15,7 +15,7 @@ class BrandController {
             await brand.save();
             let logo 
             if (req.file) {
-                logo = await uploadSingleImageToFirebase(brand.id, 'brands', req, next);
+                logo = await uploadSingleImageToFirebase(brand.id, 'brands', req.file, next);
                 if (logo) {
                     brand.logo = logo;
                     await brand.save();
@@ -48,7 +48,11 @@ class BrandController {
             const brand = await Brand.findById(id);
             let logo;
             if(req.file && brand?.logo === undefined){
-                logo = await uploadSingleImageToFirebase(brand!._id.toString(), 'brands', req, next);
+                logo = await uploadSingleImageToFirebase(brand!._id.toString(), 'brands', req.file, next);
+            }
+            if(req.file && brand?.logo !== undefined){
+                deleteSingleImageFromFirebase(brand._id.toString(), 'brands', brand.logo.id, next)
+                logo = await uploadSingleImageToFirebase(brand!._id.toString(), 'brands', req.file, next);
             }
             brand!.name = name || brand?.name;
             brand!.logo = logo || brand?.logo;

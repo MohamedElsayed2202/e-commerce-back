@@ -134,16 +134,18 @@ class Auth {
             }
             const profileId = user!.profile.toString();
             const userProfile = await Profile.findById(profileId,'-__v');
-            let image = undefined;
+            let image;
             if(req.file && userProfile?.image === undefined){
-                image = await uploadSingleImageToFirebase(userProfile!._id.toString(), 'profiles', req, next);
+                image = await uploadSingleImageToFirebase(userProfile!._id.toString(), 'profiles', req.file, next);
             }
             if(req.file && userProfile?.image !== undefined){
-                await deleteSingleImageFromFirebase(userProfile!._id.toString(), 'profiles', userProfile!.image, next);
-                image = await uploadSingleImageToFirebase(userProfile!._id.toString(), 'profiles', req, next);
+                deleteSingleImageFromFirebase(userProfile!._id.toString(), 'profiles', userProfile.image.id, next);
+                image = await uploadSingleImageToFirebase(userProfile!._id.toString(), 'profiles', req.file, next);
             }
             userProfile!.phone = phone || userProfile?.phone;
             userProfile!.address = address || userProfile?.address;
+            console.log(image);
+            
             userProfile!.image = image || userProfile?.image;
             await userProfile?.save();
             const final = await user?.populate('profile','-_id -__v');
