@@ -71,10 +71,12 @@ class Auth {
             const { email, password } = req.body;
             const user = await User.findOne({ email: email });
             if (!user) {
-                errorHandler(400, 'invalid email or password.')
+                const data = {'email': 'This email does not exist, please enter valid email'}
+                errorHandler(400, 'invalid email or password.', data)
             }
             if (!await bcrypt.compare(password, user!.password)) {
-                errorHandler(400, 'invalid email or password.')
+                const data = {'password': 'Wrong password'}
+                errorHandler(400, 'invalid email or password.', data) 
             }
             await Token.findOneAndRemove({ userId: user!._id });
             const { token, refreshToken }: Tokens = await getTokens(user!._id.toString(), user!.role);

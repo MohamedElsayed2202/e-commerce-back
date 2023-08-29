@@ -12,8 +12,8 @@ import { createTransport } from 'nodemailer'
 import HTML_TEMPLATE from "../mail-template";
 
 
-export function errorHandler(code: number, message: string, data?: any): void {
-  const error = new CustomeError(code, message, data);
+export function errorHandler(code: number, message: string, errors?: any): void {
+  const error = new CustomeError(code, message, errors);
   throw error
 }
 

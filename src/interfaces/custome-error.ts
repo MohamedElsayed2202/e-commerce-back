@@ -1,10 +1,10 @@
 class CustomeError extends Error{
     public code: number;
-    public data?: any;
-    constructor(code: number, message: string, data?:any){
+    public errors?: any;
+    constructor(code: number, message: string, errors?:any){
         super(message);
         this.code = code;
-        this.data = data
+        this.errors = errors
     }
 }
 

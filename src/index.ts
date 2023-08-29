@@ -16,9 +16,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(cors);
-app.use('/api/auth', authRouter);
-app.use('/api/brands', brandRouter);
-app.use('/api/category', categoryRouter);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/brands', brandRouter);
+app.use('/api/v1/category', categoryRouter);
 
 
 
