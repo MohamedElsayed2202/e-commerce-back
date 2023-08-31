@@ -12,7 +12,7 @@ const isAuth: RequestHandler = async (req, res, next) => {
         
         const decodedToken:any  = verify(token, process.env.token_secret!, (err, decoded) => {         
            if(err && err.name === 'TokenExpiredError'){
-                errorHandler(401, 'unauthorized');
+                errorHandler(403, 'jwt expired');
             }
             if(decoded){
                 const {id, role} = <any>decoded

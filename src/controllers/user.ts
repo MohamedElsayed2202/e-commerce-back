@@ -15,13 +15,13 @@ import { deleteSingleImageFromFirebase, uploadSingleImageToFirebase } from "../m
 class Auth {
     static getUsers: RequestHandler = async (req, res, next) => {
         try {
-            const users = await User.find({}, '-__v -password').populate<{profile: IProfile}>('profile','-_id -__v');
+            const users = await User.find({}, '-__v -password').populate<{ profile: IProfile }>('profile', '-_id -__v');
             res.status(200).json({ users })
         } catch (error: any) {
             errorThrower(error, next);
         }
     }
- 
+
     static registerOwner: RequestHandler = async (req, res, next) => {
         try {
             isValidated(req)
@@ -38,7 +38,7 @@ class Auth {
 
     static registerAdmin: RequestHandler = async (req, res, next) => {
         try {
-            const { role } = getRoleAndId(req); 
+            const { role } = getRoleAndId(req);
             if (role != 'owner') {
                 errorHandler(402, 'unauthorised operation');
             }
@@ -71,19 +71,22 @@ class Auth {
             const { email, password } = req.body;
             const user = await User.findOne({ email: email });
             if (!user) {
-                const data = {'email': 'This email does not exist, please enter valid email'}
+                const data = { 'email': 'This email does not exist, please enter valid email' }
                 errorHandler(400, 'invalid email or password.', data)
             }
             if (!await bcrypt.compare(password, user!.password)) {
-                const data = {'password': 'Wrong password'}
-                errorHandler(400, 'invalid email or password.', data) 
+                const data = { 'password': 'Wrong password' }
+                errorHandler(400, 'invalid email or password.', data)
             }
             await Token.findOneAndRemove({ userId: user!._id });
             const { token, refreshToken }: Tokens = await getTokens(user!._id.toString(), user!.role);
             res.cookie('refreshToken', refreshToken, {
-                httpOnly: true
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
+                maxAge: 7 * 24 * 60 * 60 * 1000,
             })
-            res.status(201).json({ token, userId: user?._id, role: user?.role });
+            res.status(201).json({ token, id: user?._id, role: user?.role });
         } catch (error) {
             errorThrower(error, next);
         }
@@ -92,7 +95,7 @@ class Auth {
     static refresh: RequestHandler = async (req, res, next) => {
         try {
             const refreshToken = req.cookies['refreshToken'];
-            const data: any = verify(refreshToken, process.env.refresh_secret!)
+            const data: any = verify(refreshToken, process.env.refresh_secret!);
             if (!data) {
                 errorHandler(401, 'unauthenticated')
             }
@@ -100,7 +103,10 @@ class Auth {
             if (!(dbToken!.expiredAt >= new Date())) {
                 const { refreshToken } = await regenerateRefreshToken(data.id, data.role)
                 res.cookie('refreshToken', refreshToken, {
-                    httpOnly: true
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'none',
+                    maxAge: 7 * 24 * 60 * 60 * 1000
                 })
             }
             const token = sign({
@@ -130,38 +136,38 @@ class Auth {
             const { id } = getRoleAndId(req)
             let { name, phone, address } = req.body as IProfile
             const user = await User.findById(id, '-__v -password');
-            if(name !== undefined){
+            if (name !== undefined) {
                 user!.name = name || user!.name;
                 await user!.save();
             }
             const profileId = user!.profile.toString();
-            const userProfile = await Profile.findById(profileId,'-__v');
+            const userProfile = await Profile.findById(profileId, '-__v');
             let image;
-            if(req.file && userProfile?.image === undefined){
+            if (req.file && userProfile?.image === undefined) {
                 image = await uploadSingleImageToFirebase(userProfile!._id.toString(), 'profiles', req.file, next);
             }
-            if(req.file && userProfile?.image !== undefined){
+            if (req.file && userProfile?.image !== undefined) {
                 deleteSingleImageFromFirebase(userProfile!._id.toString(), 'profiles', userProfile.image.id, next);
                 image = await uploadSingleImageToFirebase(userProfile!._id.toString(), 'profiles', req.file, next);
             }
             userProfile!.phone = phone || userProfile?.phone;
             userProfile!.address = address || userProfile?.address;
             console.log(image);
-            
+
             userProfile!.image = image || userProfile?.image;
             await userProfile?.save();
-            const final = await user?.populate('profile','-_id -__v');
-            res.status(200).json({message: 'updated successfully', user: final});
+            const final = await user?.populate('profile', '-_id -__v');
+            res.status(200).json({ message: 'updated successfully', user: final });
         } catch (error) {
             errorThrower(error, next)
         }
-    } 
+    }
 
-    static getUserProfile: RequestHandler = async (req, res, next)=>{
+    static getUserProfile: RequestHandler = async (req, res, next) => {
         try {
-            const {id} = getRoleAndId(req);
-            const user = await User.findById(id,'-__v -password').populate<{profile: IProfile}>('profile','-_id -__v');
-            res.status(200).json({user});
+            const { id } = getRoleAndId(req);
+            const user = await User.findById(id, '-_id -__v -password').populate<{ profile: IProfile }>('profile', '-_id -__v');
+            res.status(200).json({ user });
         } catch (error) {
             errorThrower(error, next)
         }
@@ -170,13 +176,13 @@ class Auth {
     static changePassword: RequestHandler = async (req, res, next) => {
         try {
             isValidated(req)
-            const {id} = getRoleAndId(req);
-            let {password} = req.body
+            const { id } = getRoleAndId(req);
+            let { password } = req.body
             password = await bcrypt.hash(password, 12);
             await User.findByIdAndUpdate(id, {
                 password: password
             })
-            res.status(201).jsonp({message: 'updated successfully.'})
+            res.status(201).jsonp({ message: 'updated successfully.' })
         } catch (error) {
             errorThrower(error, next)
         }
@@ -184,21 +190,21 @@ class Auth {
 
     static verifyEmail: RequestHandler = async (req, res, next) => {
         try {
-            const {id, token} = req.params;
+            const { id, token } = req.params;
             const user = await User.findById(id);
-            if(!user){
+            if (!user) {
                 errorHandler(400, 'invalid link');
             }
             const refToken = await Token.findOne({
                 userId: id,
                 token: token
             })
-            if(!refToken){
+            if (!refToken) {
                 errorHandler(400, 'invalid link');
             }
             user!.verified = true;
             user?.save();
-            res.status(200).json({message: 'email verified sucessfully'});
+            res.status(200).json({ message: 'email verified sucessfully' });
         } catch (error) {
             errorThrower(error, next)
         }
