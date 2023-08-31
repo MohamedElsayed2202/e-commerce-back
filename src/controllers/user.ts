@@ -10,8 +10,6 @@ import { IFullUser, IProfile, IUser } from "../interfaces/interfaces";
 import Profile from "../models/profile";
 import { deleteSingleImageFromFirebase, uploadSingleImageToFirebase } from "../middlewares/upload";
 
-
-
 class Auth {
     static getUsers: RequestHandler = async (req, res, next) => {
         try {
@@ -71,7 +69,7 @@ class Auth {
             const { email, password } = req.body;
             const user = await User.findOne({ email: email });
             if (!user) {
-                const data = { 'email': 'This email does not exist, please enter valid email' }
+                const data = { 'email': 'This email does not exist.' }
                 errorHandler(400, 'invalid email or password.', data)
             }
             if (!await bcrypt.compare(password, user!.password)) {
@@ -86,7 +84,7 @@ class Auth {
                 sameSite: 'none',
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             })
-            res.status(201).json({ token, id: user?._id, role: user?.role });
+            res.status(201).json({ token });
         } catch (error) {
             errorThrower(error, next);
         }
@@ -99,8 +97,10 @@ class Auth {
             if (!data) {
                 errorHandler(401, 'unauthenticated')
             }
-            const dbToken = await Token.findOne({ userId: data.id })
+            const dbToken = await Token.findOne({ userId: data.id, token: refreshToken })
+
             if (!(dbToken!.expiredAt >= new Date())) {
+                await dbToken?.deleteOne()
                 const { refreshToken } = await regenerateRefreshToken(data.id, data.role)
                 res.cookie('refreshToken', refreshToken, {
                     httpOnly: true,
@@ -109,6 +109,7 @@ class Auth {
                     maxAge: 7 * 24 * 60 * 60 * 1000
                 })
             }
+
             const token = sign({
                 id: data.id,
                 role: data.role
@@ -152,8 +153,6 @@ class Auth {
             }
             userProfile!.phone = phone || userProfile?.phone;
             userProfile!.address = address || userProfile?.address;
-            console.log(image);
-
             userProfile!.image = image || userProfile?.image;
             await userProfile?.save();
             const final = await user?.populate('profile', '-_id -__v');
@@ -210,9 +209,5 @@ class Auth {
         }
     }
 }
-
-
-
-
 
 export default Auth

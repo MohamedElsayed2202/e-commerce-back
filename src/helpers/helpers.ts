@@ -53,8 +53,8 @@ export async function regenerateRefreshToken(id: string, role: string): Promise<
   const refreshToken = sign({
     id: id,
     role: role
-  }, process.env.refreshToken!)
-  await Token.findOneAndRemove({ userId: id });
+  }, process.env.refreshToken!);
+  
   const expiredAt = new Date();
   expiredAt.setDate(expiredAt.getDate() + 7);
   const token = new Token({

@@ -1,8 +1,7 @@
 import { Router } from "express";
 import Auth from "../controllers/user";
-import { upload, uploadSingleImageToFirebase } from "../middlewares/upload";
+import { upload } from "../middlewares/upload";
 import { body } from "express-validator";
-import User from "../models/user";
 import isAuth from "../middlewares/is-auth";
 import globalValidator, { profileSchemaValidator, userSchemaValidator } from "../helpers/validations";
 import { roleIsNotUser, roleIsOwner } from "../middlewares/roles";
