@@ -30,7 +30,6 @@ export interface IToken{
 export interface IProfile{
     phone?: string,
     image?: IImage,
-    imageUrl?: string,
     address?: string,
     name?: string
 }

@@ -13,7 +13,9 @@ import { deleteSingleImageFromFirebase, uploadSingleImageToFirebase } from "../m
 class Auth {
     static getUsers: RequestHandler = async (req, res, next) => {
         try {
-            const users = await User.find({}, '-__v -password').populate<{ profile: IProfile }>('profile', '-_id -__v');
+            const {id} = getRoleAndId(req)
+            // _id: {$ne: id}
+            const users = await User.find({}, '-__v -password').populate<{ profile: IProfile }>('profile', '-_id -__v -address -image.id');
             res.status(200).json({ users })
         } catch (error: any) {
             errorThrower(error, next);
