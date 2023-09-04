@@ -14,7 +14,7 @@ export interface IFullUser{
     name: string,
     email: string,
     password: string,
-    role: string,
+    role?: string,
     phone?: string,
     address?: string
 }

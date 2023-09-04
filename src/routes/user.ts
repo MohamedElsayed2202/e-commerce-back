@@ -12,11 +12,11 @@ authRouter.get('/', isAuth, roleIsNotUser, Auth.getUsers);
 
 authRouter.get('/user-profile', isAuth, Auth.getUserProfile)
 
-authRouter.post('/add-owner', globalValidator(userSchemaValidator), Auth.registerOwner);
+// authRouter.post('/add-owner', globalValidator(userSchemaValidator), Auth.registerOwner);
 
-authRouter.post('/add-admin', isAuth, roleIsOwner, globalValidator(userSchemaValidator), Auth.registerAdmin);
+// authRouter.post('/add-admin', isAuth, roleIsOwner, globalValidator(userSchemaValidator), Auth.registerAdmin);
 
-authRouter.post('/add-user', globalValidator(userSchemaValidator), Auth.registerUser);
+authRouter.post('/add-user', globalValidator(userSchemaValidator), Auth.register);
 
 
 authRouter.post('/login', Auth.login);

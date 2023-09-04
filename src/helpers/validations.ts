@@ -44,7 +44,17 @@ export const userSchemaValidator:Schema = {
         trim: true,
         escape: true,
         optional: true,
-    }
+    },
+    phone:{
+        exists: true,
+        trim: true,
+        matches: {
+            options: /^01[0125][0-9]{8}$/,
+            errorMessage: 'Must provide a valid EG phone number'
+        },
+        escape: true,
+        optional: true
+    },
  }
 
 
@@ -67,6 +77,7 @@ export const userSchemaValidator:Schema = {
             errorMessage: 'Must provide a valid EG phone number'
         },
         escape: true,
+        optional: true
     },
     address:{
         exists: true,

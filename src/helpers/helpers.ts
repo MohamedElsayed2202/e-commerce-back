@@ -34,17 +34,21 @@ export async function getTokens(id: string, role: string): Promise<Tokens> {
     id: id,
     role: role
   }, process.env.token_secret!, { expiresIn: '2h' });
+
   const refreshToken = sign({
     id: id,
     role: role
   }, process.env.refresh_secret!);
+
   const expiredAt = new Date();
   expiredAt.setDate(expiredAt.getDate() + 7);
+
   const toke = new Token({
     token: refreshToken,
     userId: id,
     expiredAt: expiredAt
   });
+  
   await toke.save();
   return { token, refreshToken }
 }
@@ -71,9 +75,10 @@ export function getRoleAndId(req: Request): { id: string, role: string } {
   const data: any = verify(token, process.env.token_secret!);
   return { id: data.id, role: data.role };
 }
-
-export async function registration(data: IFullUser, role?: string): Promise<IUser & { _id: Types.ObjectId; }> {
-  let { name, email, password, phone, address } = data;
+// role?: string
+export async function registration(data: IFullUser): Promise<IUser & { _id: Types.ObjectId; }> {
+  let { name, email, password, role, phone, address } = data;
+  
   const profile = new Profile({
     address: address,
     phone: phone,

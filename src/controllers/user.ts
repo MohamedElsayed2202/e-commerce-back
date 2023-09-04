@@ -13,53 +13,49 @@ import { deleteSingleImageFromFirebase, uploadSingleImageToFirebase } from "../m
 class Auth {
     static getUsers: RequestHandler = async (req, res, next) => {
         try {
-            const {id} = getRoleAndId(req)
+            const { id } = getRoleAndId(req)
             // _id: {$ne: id}
-            const users = await User.find({}, '-__v -password').populate<{ profile: IProfile }>('profile', '-_id -__v -address -image.id');
+            const users = await User.find({ _id: { $ne: id } }, '-__v -password').populate<{ profile: IProfile }>('profile', '-_id -__v -address -image.id');
+            // if(users.length === 0 ){
+            // res.status(200).json(users)
+            // }
             res.status(200).json({ users })
         } catch (error: any) {
             errorThrower(error, next);
         }
     }
 
-    static registerOwner: RequestHandler = async (req, res, next) => {
+    static register: RequestHandler = async (req, res, next) => {
         try {
-            isValidated(req)
-            const user = await registration(req.body as IFullUser, 'owner')
-            const { token, refreshToken }: Tokens = await getTokens(user._id.toString(), user.role);
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true
-            })
-            res.status(201).json({ token });
-        } catch (error) {
-            errorThrower(error, next);
-        }
-    }
+            isValidated(req);
+            const { role: requestUserRole } = getRoleAndId(req);
+            const { role } = req.body;
 
-    static registerAdmin: RequestHandler = async (req, res, next) => {
-        try {
-            const { role } = getRoleAndId(req);
-            if (role != 'owner') {
-                errorHandler(402, 'unauthorised operation');
+            if (role && role === 'admin' || role === 'owner') {
+                if (requestUserRole !== 'owner') {
+                    errorHandler(402, 'unauthorised operation, only owner can add admin or owner user');
+                }
             }
-            isValidated(req)
-            const user = await registration(req.body as IFullUser, 'admin')
-            res.status(201).json({ user });
-        } catch (error) {
-            errorThrower(error, next);
-        }
-    }
 
-    static registerUser: RequestHandler = async (req, res, next) => {
-        try {
-            isValidated(req)
-            const user = await registration(req.body as IFullUser)
+            const user = await registration(req.body as IFullUser);
+
+            if (user.role === 'admin') {
+                res.status(201).json({ message: 'admin user created successfully' });
+            }
+
             const { token, refreshToken }: Tokens = await getTokens(user._id.toString(), user.role);
-            const link = `${process.env.BASE_URL}/auth/verify/${user._id}/${refreshToken}`
-            await sendEmail(user.email, link, next);
+            
+            if(user.role === 'user'){
+                const link = `${process.env.BASE_URL}/auth/verify/${user._id}/${refreshToken}`
+                await sendEmail(user.email, link, next);
+            }
+
             res.cookie('refreshToken', refreshToken, {
-                httpOnly: true
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
             })
+
             res.status(201).json({ token });
         } catch (error) {
             errorThrower(error, next);
@@ -70,22 +66,27 @@ class Auth {
         try {
             const { email, password } = req.body;
             const user = await User.findOne({ email: email });
+
             if (!user) {
                 const data = { 'email': 'This email does not exist.' }
                 errorHandler(400, 'invalid email or password.', data)
             }
+
             if (!await bcrypt.compare(password, user!.password)) {
                 const data = { 'password': 'Wrong password' }
                 errorHandler(400, 'invalid email or password.', data)
             }
+
             await Token.findOneAndRemove({ userId: user!._id });
+
             const { token, refreshToken }: Tokens = await getTokens(user!._id.toString(), user!.role);
+
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: true,
                 sameSite: 'none',
-                maxAge: 7 * 24 * 60 * 60 * 1000,
             })
+
             res.status(201).json({ token });
         } catch (error) {
             errorThrower(error, next);
@@ -108,14 +109,14 @@ class Auth {
                     httpOnly: true,
                     secure: true,
                     sameSite: 'none',
-                    maxAge: 7 * 24 * 60 * 60 * 1000
                 })
             }
 
             const token = sign({
                 id: data.id,
                 role: data.role
-            }, process.env.token_secret!, { expiresIn: '2h' })
+            }, process.env.token_secret!, { expiresIn: '2h' });
+
             res.status(201).json({ token });
         } catch (error) {
             errorThrower(error, next);
@@ -213,3 +214,35 @@ class Auth {
 }
 
 export default Auth
+
+
+
+// static registerAdmin: RequestHandler = async (req, res, next) => {
+    //     try {
+    //         const { role } = getRoleAndId(req);
+    //         if (role != 'owner') {
+    //             errorHandler(402, 'unauthorised operation');
+    //         }
+    //         isValidated(req)
+    //         const user = await registration(req.body as IFullUser, 'admin')
+    //         res.status(201).json({ user });
+    //     } catch (error) {
+    //         errorThrower(error, next);
+    //     }
+    // }
+
+    // static registerUser: RequestHandler = async (req, res, next) => {
+    //     try {
+    //         isValidated(req)
+    //         const user = await registration(req.body as IFullUser)
+    //         const { token, refreshToken }: Tokens = await getTokens(user._id.toString(), user.role);
+    //         const link = `${process.env.BASE_URL}/auth/verify/${user._id}/${refreshToken}`
+    //         await sendEmail(user.email, link, next);
+    //         res.cookie('refreshToken', refreshToken, {
+    //             httpOnly: true
+    //         })
+    //         res.status(201).json({ token });
+    //     } catch (error) {
+    //         errorThrower(error, next);
+    //     }
+    // }
