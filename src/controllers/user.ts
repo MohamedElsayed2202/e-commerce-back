@@ -39,8 +39,8 @@ class Auth {
 
             const user = await registration(req.body as IFullUser);
 
-            if (user.role === 'admin') {
-                res.status(201).json({ message: 'admin user created successfully' });
+            if (user.role === 'admin' || user.role === 'admin') {
+                res.status(201).json({ message: `${user.role} user created successfully`, user });
             }
 
             const { token, refreshToken }: Tokens = await getTokens(user._id.toString(), user.role);
@@ -96,20 +96,26 @@ class Auth {
     static refresh: RequestHandler = async (req, res, next) => {
         try {
             const refreshToken = req.cookies['refreshToken'];
+            console.log(refreshToken);
+            
             const data: any = verify(refreshToken, process.env.refresh_secret!);
+            console.log(data);
+            
             if (!data) {
                 errorHandler(401, 'unauthenticated')
             }
-            const dbToken = await Token.findOne({ userId: data.id, token: refreshToken })
-
+            const dbToken = await Token.findOne({ userId: data.id })
+            console.log(dbToken);
+            
             if (!(dbToken!.expiredAt >= new Date())) {
-                await dbToken?.deleteOne()
-                const { refreshToken } = await regenerateRefreshToken(data.id, data.role)
-                res.cookie('refreshToken', refreshToken, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: 'none',
-                })
+                // await dbToken?.deleteOne();
+                errorHandler(440, 'login time-out');
+                // const { refreshToken } = await regenerateRefreshToken(data.id, data.role)
+                // res.cookie('refreshToken', refreshToken, {
+                //     httpOnly: true,
+                //     secure: true,
+                //     sameSite: 'none',
+                // })
             }
 
             const token = sign({

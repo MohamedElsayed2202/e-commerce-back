@@ -1,6 +1,6 @@
 import { sign, verify } from "jsonwebtoken";
 import CustomeError from "../interfaces/custome-error";
-import { IFullUser, IUser } from "../interfaces/interfaces";
+import { IFullUser, IProfile, IUser } from "../interfaces/interfaces";
 import Profile from "../models/profile";
 import User from "../models/user";
 import bcrypt from 'bcryptjs';
@@ -41,7 +41,8 @@ export async function getTokens(id: string, role: string): Promise<Tokens> {
   }, process.env.refresh_secret!);
 
   const expiredAt = new Date();
-  expiredAt.setDate(expiredAt.getDate() + 7);
+  // expiredAt.setDate(expiredAt.getDate() + 7); the correct one 
+  expiredAt.setHours(expiredAt.getHours() + 1); // for testing 
 
   const toke = new Token({
     token: refreshToken,
@@ -76,7 +77,7 @@ export function getRoleAndId(req: Request): { id: string, role: string } {
   return { id: data.id, role: data.role };
 }
 // role?: string
-export async function registration(data: IFullUser): Promise<IUser & { _id: Types.ObjectId; }> {
+export async function registration(data: IFullUser): Promise<Omit<IUser, 'password'> & { _id: Types.ObjectId; }> {
   let { name, email, password, role, phone, address } = data;
   
   const profile = new Profile({
@@ -92,8 +93,9 @@ export async function registration(data: IFullUser): Promise<IUser & { _id: Type
     role,
     profile: profile._id
   });
-  await user.save();
-  return user
+  await user.save()
+  await user.populate<{ profile: IProfile }>('profile', '-_id -__v -address -image.id');
+  return {_id: user._id, email: user.email, name: user.name, role: user.role, profile: user.profile}
 }
 
 export function isValidated(req: Request): void {
