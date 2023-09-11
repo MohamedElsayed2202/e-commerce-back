@@ -9,9 +9,30 @@ import cookieParser from 'cookie-parser';
 import brandRouter from './routes/brand';
 import categoryRouter from './routes/category';
 import { deleteMultipleImageFromFirebase, deleteSingleImageFromFirebase, upload, uploadMultipleImageToFirebase, uploadSingleImageToFirebase } from './middlewares/upload';
-
+import { passportConfig  } from './google-auth';
+import passport from 'passport';
 const app = express() 
 
+
+passportConfig(passport);
+app.use(passport.initialize());
+
+app.get('/google', passport.authenticate('google', { session: false }), (req, res) => {
+    res.status(200).json(req.user)
+});
+
+// app.get('/google/redirect', passport.authenticate('google', { session: false , failureRedirect: `http://localhost:8080/login`}), (req, res) => {
+//     console.log(5555555);
+    
+//     console.log("mmmmmmm",req.user);
+//     // res.
+//   res.status(200).json(req.user); //req.user has the redirection_url
+// //   res.redirect("http://localhost:8080/login"); //req.user has the redirection_url
+// });
+
+app.get('/login', (req, res) => {
+    res.status(200).json({'ss':'bbb'})
+})
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cors);
@@ -19,7 +40,6 @@ app.use(cookieParser());
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/brands', brandRouter);
 app.use('/api/v1/category', categoryRouter);
-
 
 
 

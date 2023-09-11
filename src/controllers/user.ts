@@ -121,7 +121,7 @@ class Auth {
             const token = sign({
                 id: data.id,
                 role: data.role
-            }, process.env.token_secret!, { expiresIn: '2h' });
+            }, process.env.token_secret!, { expiresIn: '1h' });
 
             res.status(201).json({ token });
         } catch (error) {

@@ -42,7 +42,7 @@ export async function getTokens(id: string, role: string): Promise<Tokens> {
 
   const expiredAt = new Date();
   // expiredAt.setDate(expiredAt.getDate() + 7); the correct one 
-  expiredAt.setHours(expiredAt.getHours() + 1); // for testing 
+  expiredAt.setHours(expiredAt.getHours() + .5); // for testing 
 
   const toke = new Token({
     token: refreshToken,
