@@ -1,11 +1,10 @@
 import * as admin from 'firebase-admin'
 // import serviceAccount from '../serviceAccountKey.json'
 import { v4 as uuidv4 } from 'uuid'
-import { NextFunction, Request, RequestHandler } from 'express'
+import { NextFunction } from 'express'
 import { getDownloadURL } from 'firebase-admin/storage'
 import multer from 'multer'
 import path from 'path'
-import { errorThrower, getRoleAndId } from '../helpers/helpers'
 import { IImage } from '../interfaces/interfaces'
 
 
@@ -60,7 +59,7 @@ export const uploadSingleImageToFirebase = async (id: string, dist: string, file
         const url = await getDownloadURL(ref); // get the shareable url
         return {url: url, id: fileName}; // returning the image object {url, id} to save in database
     } catch (error) {
-        errorThrower(error, next) // a custom function to handle errors
+        next(error) // a custom function to handle errors
     }
 }
 
@@ -74,7 +73,7 @@ export const uploadMultipleImageToFirebase = async (id: string, dist: string, fi
         }
         return images; // returning the images
     } catch (error) {
-        errorThrower(error, next)
+        next(error)
     }
 }
 
@@ -83,7 +82,7 @@ export const deleteSingleImageFromFirebase = async (id: string, dist: string, fi
     try {                                                         
         await bucket.file(`${dist}/${id}/${fileName}`).delete(); // delete the file to firebase storage
     } catch (error) {
-        errorThrower(error, next)
+        next(error)
     }
 } 
 

@@ -1,4 +1,4 @@
-import { sign, verify } from "jsonwebtoken";
+import { sign } from "jsonwebtoken";
 import CustomeError from "../interfaces/custome-error";
 import { IFullUser, IProfile, IUser } from "../interfaces/interfaces";
 import Profile from "../models/profile";
@@ -9,7 +9,8 @@ import { Request } from "express";
 import { Types } from "mongoose";
 import { validationResult } from "express-validator";
 import { createTransport } from 'nodemailer'
-import HTML_TEMPLATE from "../mail-template";
+import HTML_TEMPLATE from "../utils/mail-template";
+import { Tokens } from "../types/custome-types";
 
 
 export function errorHandler(code: number, message: string, errors?: any): void {
@@ -17,17 +18,6 @@ export function errorHandler(code: number, message: string, errors?: any): void 
   throw error
 }
 
-export function errorThrower(error: any, next: any): void {
-  if (!error.code) {
-    error.code = 500;
-  }
-  next(error);
-}
-
-export type Tokens = {
-  token: string,
-  refreshToken: string
-}
 
 export async function getTokens(id: string, role: string): Promise<Tokens> {
   const token = sign({
@@ -49,7 +39,7 @@ export async function getTokens(id: string, role: string): Promise<Tokens> {
     userId: id,
     expiredAt: expiredAt
   });
-  
+
   await toke.save();
   return { token, refreshToken }
 }
@@ -59,7 +49,7 @@ export async function regenerateRefreshToken(id: string, role: string): Promise<
     id: id,
     role: role
   }, process.env.refreshToken!);
-  
+
   const expiredAt = new Date();
   expiredAt.setDate(expiredAt.getDate() + 7);
   const token = new Token({
@@ -71,15 +61,10 @@ export async function regenerateRefreshToken(id: string, role: string): Promise<
   return { refreshToken };
 }
 
-export function getRoleAndId(req: Request): { id: string, role: string } {
-  const token = req.get('Authorization')!.split(' ')[1];
-  const data: any = verify(token, process.env.token_secret!);
-  return { id: data.id, role: data.role };
-}
 // role?: string
 export async function registration(data: IFullUser): Promise<Omit<IUser, 'password'> & { _id: Types.ObjectId; }> {
   let { name, email, password, role, phone, address } = data;
-  
+
   const profile = new Profile({
     address: address,
     phone: phone,
@@ -95,7 +80,7 @@ export async function registration(data: IFullUser): Promise<Omit<IUser, 'passwo
   });
   await user.save()
   await user.populate<{ profile: IProfile }>('profile', '-_id -__v -address -image.id');
-  return {_id: user._id, email: user.email, name: user.name, role: user.role, profile: user.profile}
+  return { _id: user._id, email: user.email, name: user.name, role: user.role, profile: user.profile }
 }
 
 export function isValidated(req: Request): void {
@@ -124,7 +109,7 @@ export async function sendEmail(email: string, link: string, next: any): Promise
       html: HTML_TEMPLATE(link)
     })
   } catch (error) {
-    errorThrower(error, next);
+    next(error)
   }
 }
 

@@ -1,50 +1,8 @@
-import { RequestHandler } from "express";
-import { errorHandler, errorThrower, getRoleAndId } from "../helpers/helpers";
+import { errorHandler } from "../helpers/helpers";
+import asyncHandler from "express-async-handler"
 
-export const roleIsOwner:RequestHandler = async (req, res, next) => {
-    try {
-        const {role} = getRoleAndId(req);
-            if(role !== 'owner') {
-                errorHandler(402, 'unauthorised operation');
-            }
-            next();
-    } catch (error) {
-        errorThrower(error, next)
-    }
-} 
-
-export const roleIsAdmin:RequestHandler = async (req, res, next) => {
-    try {
-        const {role} = getRoleAndId(req);
-            if(role !== 'admin') {
-                errorHandler(402, 'unauthorised operation');
-            }
-            next();
-    } catch (error) {
-        errorThrower(error, next)
-    }
-} 
-
-export const roleIsUser:RequestHandler = async (req, res, next) => {
-    try {
-        const {role} = getRoleAndId(req);
-            if(role !== 'user') {
-                errorHandler(402, 'unauthorised operation');
-            }
-            next();
-    } catch (error) {
-        errorThrower(error, next)
-    }
-}
-
-export const roleIsNotUser:RequestHandler = async (req, res, next) => {
-    try {
-        const {role} = getRoleAndId(req);
-            if(role === 'user') {
-                errorHandler(402, 'unauthorised operation');
-            }
-            next();
-    } catch (error) {
-        errorThrower(error, next)
-    }
-} 
+const checkRole = (roles: string[]) => asyncHandler(async (req, res,next) => {
+    const {role:userRole} = req.user!
+    !roles.includes(userRole)? errorHandler(401, "Sorry you do not have access to perform this action") : next();
+})
+export default checkRole;

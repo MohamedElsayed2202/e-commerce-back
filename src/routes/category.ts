@@ -1,17 +1,17 @@
 import { Router } from "express";
 import CategoryController from "../controllers/category";
 import isAuth from "../middlewares/is-auth";
-import { roleIsNotUser } from "../middlewares/roles";
+import checkRole from "../middlewares/roles"; 
 
 const categoryRouter = Router();
 
 categoryRouter.get("/", CategoryController.getAllCategories);
 
-categoryRouter.post("/create", isAuth, roleIsNotUser, CategoryController.addCategory);
+categoryRouter.post("/create", isAuth, checkRole(["admin", "owner"]), CategoryController.addCategory);
 
-categoryRouter.put("/updae/:id", isAuth, roleIsNotUser, CategoryController.updateCategories);
+categoryRouter.put("/updae/:id", isAuth, checkRole(["admin", "owner"]), CategoryController.updateCategories);
 
-categoryRouter.delete("/delete/:id", isAuth, roleIsNotUser, CategoryController.deleteCategory);
+categoryRouter.delete("/delete/:id", isAuth, checkRole(["admin", "owner"]), CategoryController.deleteCategory);
 
 
 

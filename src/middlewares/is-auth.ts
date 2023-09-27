@@ -1,10 +1,9 @@
-import { RequestHandler } from "express";
-import{ errorHandler, errorThrower } from "../helpers/helpers";
+import{ errorHandler } from "../helpers/helpers";
 import { verify } from "jsonwebtoken";
 import User from "../models/user";
+import asyncHandler from "express-async-handler"
 
-const isAuth: RequestHandler = async (req, res, next) => {
-    try {
+const isAuth = asyncHandler(async (req, res, next) => {
         const token = req.get("Authorization")?.split(' ')[1] || '';
         if(!token){
             errorHandler(401, 'unauthorized');
@@ -27,10 +26,8 @@ const isAuth: RequestHandler = async (req, res, next) => {
         if(!user){
             errorHandler(403, 'access denied');
         }
+        req.user = user!;
         next();
-    } catch (error) {
-        errorThrower(error, next)       
-    }
-}
+})
 
 export default isAuth;
